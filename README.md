@@ -1,6 +1,5 @@
-# minebridge
-A cross-version save-bridging tool to keep a single Minecraft world playable across multiple game versions without data corruption.
-1. What MineBridge Does
+
+## 1. What MineBridge Does
 
 * **Automated Version-Specific Copies**
   Creates and maintains separate copies of a given world for each target Minecraft version in a `bridged_saves/` folder.
@@ -80,21 +79,109 @@ mc-bridge --world MyWorld --version 1.18.2 --launch
 
 ## 4. Packaging & Distribution
 
+### 4.1 GitHub Repository Setup
+
+To centralize development and allow collaboration:
+
+1. **Initialize your local Git repo**
+
+   ```bash
+   git init
+   git branch -m main
+   git add .
+   git commit -m "Initial commit: scaffold MineBridge project"
+   ```
+
+2. **Create the remote repository**
+
+   * **Via GitHub CLI**:
+
+     ```bash
+     gh repo create NikolaosAngelosoulis/minebridge \
+       --public --source=. --remote=origin --push
+     ```
+   * **Via GitHub Web UI**:
+
+     1. Go to [https://github.com/new](https://github.com/new)
+     2. Set repository name to `minebridge`, make it Public
+     3. Skip README upload (we have one), then click **Create repository**
+     4. Follow the displayed push commands to link and push your local repo.
+
+3. **Configure repository settings**
+
+   * Under **Settings > Manage Access**, invite collaborators by GitHub username or email.
+   * Enable **Issues**, **Pull Requests**, and **Actions** for CI/CD.
+   * Add branch protection rules for `main` (e.g., require PR reviews).
+
+4. **Ongoing maintenance**
+
+   * Use labels and issue templates for bug reports and feature requests.
+   * Set up a **CONTRIBUTING.md** to guide new contributors on coding standards, testing, and commit message format.
+
+### 4.2 Packaging & Distribution
+
 * **PyPI Package**: via `setup.py` and `requirements.txt`
 * **Standalone Binaries**: via PyInstaller for Windows (.exe), macOS (.app), Linux (AppImage/.deb/.rpm)
 * **Auto-Build Workflow**: GitHub Actions to produce release artifacts on tagging.
 
----
+#### 4.3 Distributing a ZIP Bundle
 
-## 5. Dependencies
+You can package a full runnable build—including executables, assets, and folder structure—into a single ZIP for users:
 
-* **nbtlib**: For reading/writing Minecraft NBT data (`pip install nbtlib`).
-* **tkinter**: Standard Python GUI library (bundled with most Python installs).
-* **PyInstaller** (optional): For binary packaging.
+1. **Build Binaries**
 
----
+   * Run PyInstaller to produce platform-specific executables:
 
-## 6. Similar Tools & Comparison
+     ```bash
+     pyinstaller --onefile --name minebridge minebridge.spec  # Uses preconfigured spec
+     ```
+   * Artifacts appear under `dist/`:
+
+     ```text
+     dist/
+     ├─ minebridge.exe       # Windows
+     ├─ minebridge           # Linux
+     └─ minebridge.app       # macOS
+     ```
+
+2. **Organize Folders**
+   Create a staging directory with this layout:
+
+   ```text
+   minebridge-<version>-<platform>/
+   ├── bin/                 # Executable(s)
+   │   ├── minebridge.exe   # or 'minebridge' on Unix
+   ├── README.md
+   ├── LICENSE
+   └── config/             # Optional default config (if any)
+   ```
+
+3. **Zip It Up**
+   From the parent of `minebridge-<version>-<platform>/`, run:
+
+   ```bash
+   zip -r minebridge-<version>-<platform>.zip minebridge-<version>-<platform>/
+   ```
+
+4. **Running from ZIP**
+   Users can unzip and execute:
+
+   ```bash
+   unzip minebridge-2.0.0-windows.zip
+   cd minebridge-2.0.0-windows/bin
+   ./minebridge.exe --help
+   ```
+
+   On Unix, mark the binary as executable if needed:
+
+   ```bash
+   chmod +x minebridge
+   ./minebridge --world MyWorld --version 1.18.2
+   ```
+
+This ZIP distribution is self-contained: no Python install or dependencies are required on the target machine.
+
+## 5. Similar Tools & Comparison
 
 | Tool                    | Purpose                               | Notes                                             |
 | ----------------------- | ------------------------------------- | ------------------------------------------------- |
